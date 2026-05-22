@@ -265,6 +265,251 @@ tr.row-zero td {
   text-align: center;
 }
 
+.inventory-panel {
+  padding-bottom: 5.5rem;
+}
+
+.inventory-intro {
+  color: var(--muted);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.inventory-table .beer-name {
+  font-weight: 600;
+  min-width: 11rem;
+}
+
+.dist-cell {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.cell-input {
+  width: 5rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-order {
+  text-align: center;
+  width: 5rem;
+}
+
+.order-qty {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-qty.needs-order {
+  color: var(--accent);
+}
+
+.order-qty.at-par {
+  color: var(--ok);
+}
+
+.inventory-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0;
+}
+
+.inventory-footer {
+  position: sticky;
+  bottom: 0;
+  margin: 1.25rem -1.25rem -1.25rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(to top, var(--surface) 85%, transparent);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footer-summary .muted {
+  color: var(--muted);
+}
+
+.btn-send {
+  min-width: 11rem;
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  transition:
+    opacity 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s,
+    transform 0.15s;
+}
+
+.btn-send.ready {
+  opacity: 1;
+  filter: none;
+  box-shadow:
+    0 0 0 2px rgba(232, 93, 4, 0.35),
+    0 0 24px rgba(232, 93, 4, 0.45);
+  animation: pulse-ready 2s ease-in-out infinite;
+}
+
+.btn-send.ready:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+@keyframes pulse-ready {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(232, 93, 4, 0.35),
+      0 0 20px rgba(232, 93, 4, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(232, 93, 4, 0.5),
+      0 0 32px rgba(232, 93, 4, 0.55);
+  }
+}
+
+.send-preview {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.send-preview h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.email-block {
+  margin-top: 0.75rem;
+}
+
+.email-block summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.email-block pre {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.5rem 0 0;
+}
+
+.review-panel {
+  padding-bottom: 5.5rem;
+}
+
+.back-btn {
+  margin-bottom: 1rem;
+}
+
+.review-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+}
+
+.review-intro {
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.send-from-banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.dist-email-to {
+  margin: -0.35rem 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.dist-email-to a {
+  color: var(--accent);
+}
+
+.sent-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.dist-order-block {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--surface2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.dist-order-block h3 {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+}
+
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-table th,
+.review-table td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.review-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.order-cell .sub {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.email-preview summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.email-preview pre {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.success-banner {
+  color: var(--ok);
+  background: rgba(82, 183, 136, 0.12);
+  border: 1px solid rgba(82, 183, 136, 0.35);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
 @media (max-width: 640px) {
   .date-bar {
     flex-direction: column;

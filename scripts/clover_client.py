@@ -23,19 +23,30 @@ DEFAULT_SALES_CATEGORY = "Beer"
 # Canonical beer line items (dashboard allowlist). Edit config.yaml to change.
 BEER_LINE_ITEMS: tuple[str, ...] = (
     "Angry Orchard",
-    "Best Day IPA",
     "Blue Moon",
     "Boat Show (Yellow Springs)",
     "Bud Light",
     "Busch Light",
     "Coors Light",
     "Guinness",
+    "High Noon Pineapple",
     "Michelob Ultra",
     "Miller Lite",
     "Modelo",
     "Truth",
     "Yuengling",
 )
+
+# Clover register names → canonical SKU (case-insensitive keys)
+LINE_ITEM_ALIASES: dict[str, str] = {
+    "mic ultra": "Michelob Ultra",
+    "michelob ultra": "Michelob Ultra",
+    "budlight": "Bud Light",
+    "bud light": "Bud Light",
+    "hn pineapple": "High Noon Pineapple",
+    "high noon pineapple": "High Noon Pineapple",
+    "high noon pinneaple": "High Noon Pineapple",
+}
 
 BEVERAGE_CATEGORY_HINTS = (
     "beer",
@@ -197,11 +208,13 @@ def allowed_beer_line_items() -> tuple[str, ...]:
 
 
 def canonical_beer_name(line_name: str) -> str | None:
-    """Map a Clover line-item name to a canonical beer SKU, or None if not allowed."""
+    """Map a Clover line-item name to a canonical SKU, or None if not tracked."""
     raw = (line_name or "").strip()
     if not raw:
         return None
     lower = raw.lower()
+    if lower in LINE_ITEM_ALIASES:
+        return LINE_ITEM_ALIASES[lower]
     for canonical in allowed_beer_line_items():
         if canonical.lower() == lower:
             return canonical
@@ -352,7 +365,7 @@ def _sales_cache_key(cfg: CloverConfig, category_filter: str, start_d: dt.date, 
     names_key = "|".join(allowed_beer_line_items())
     digest = hashlib.sha256(names_key.encode("utf-8")).hexdigest()[:12]
     return (
-        f"sales_v4:{cfg.merchant_id}:{category_filter.strip().lower()}:"
+        f"sales_v6:{cfg.merchant_id}:{category_filter.strip().lower()}:"
         f"{digest}:{start_d.isoformat()}:{end_d.isoformat()}"
     )
 

@@ -1,11 +1,6 @@
 default_timezone: America/Chicago
 default_currency_minor_unit: cents
 
-# Built-in high-level mode uses these assumptions:
-# 1) Read orders in a time range
-# 2) Expand line items
-# 3) Aggregate line-item names matching item_name (case-insensitive contains)
-
 api:
   base_url_env: CLOVER_BASE_URL
   merchant_id_env: CLOVER_MERCHANT_ID
@@ -16,16 +11,16 @@ query_defaults:
   include_refunds_as_negative: true
   clover_category: Beer
 
-# Only these line-item names appear on the dashboard (exact match, case-insensitive).
+# Sales + inventory line items (exact canonical names)
 beer_line_items:
   - Angry Orchard
-  - Best Day IPA
   - Blue Moon
   - Boat Show (Yellow Springs)
   - Bud Light
   - Busch Light
   - Coors Light
   - Guinness
+  - High Noon Pineapple
   - Michelob Ultra
   - Miller Lite
   - Modelo
@@ -37,3 +32,28 @@ outputs:
   write_csv: true
   output_dir: data
   logs_dir: logs
+
+# Reorder emails — which distributor carries each SKU
+distributors:
+  bonbright:
+    label: Bonbright
+    beers:
+      - Miller Lite
+      - Guinness
+      - Blue Moon
+      - Coors Light
+      - Modelo
+  heidelberg:
+    label: Heidelberg
+    beers:
+      - Michelob Ultra
+      - Yuengling
+      - Bud Light
+      - Angry Orchard
+      - High Noon Pineapple
+      - Busch Light
+      - Truth
+  yellow_springs:
+    label: Yellow Springs
+    beers:
+      - Boat Show (Yellow Springs)

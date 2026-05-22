@@ -2,8 +2,10 @@
 data/
 !data/cache/.gitkeep
 logs/
+node_modules/
 web/node_modules/
 web/dist/
+*.tsbuildinfo
 public/
 !public/.gitkeep
 __pycache__/

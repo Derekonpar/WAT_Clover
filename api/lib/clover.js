@@ -1,4 +1,10 @@
-import { BEER_LINE_ITEMS, canonicalBeerName, emptyBeerRows } from "./beer-line-items.js";
+import {
+  BEER_LINE_ITEMS,
+  canonicalBeerName,
+  emptyBeerRows,
+} from "./beer-line-items.js";
+
+export { canonicalBeerName };
 
 const memoryCache = new Map();
 const CACHE_TTL_MS = (Number(process.env.CLOVER_CACHE_TTL_HOURS) || 24) * 3600 * 1000;
@@ -112,7 +118,7 @@ function aggregateOrders(orders) {
 }
 
 function cacheKey(cfg, startDate, endDate) {
-  return `sales_v5:${cfg.merchantId}:${startDate}:${endDate}`;
+  return `sales_v6:${cfg.merchantId}:${startDate}:${endDate}`;
 }
 
 export async function fetchSalesReport(startDate, endDate, { forceRefresh = false } = {}) {

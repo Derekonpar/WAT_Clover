@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import InventoryTab from "./InventoryTab";
 
 type Tab = "sales" | "inventory";
 
@@ -124,7 +125,7 @@ export default function App() {
     <div className="app">
       <header className="header">
         <h1>Wild Axe — Beer Sales</h1>
-        <p>13 Clover Beer items · qty and revenue for your date range</p>
+        <p>13 tracked beverages · sales by date range</p>
       </header>
 
       <nav className="tabs">
@@ -266,20 +267,7 @@ export default function App() {
         </section>
       )}
 
-      {tab === "inventory" && (
-        <section className="panel placeholder">
-          <h3>Inventory (coming next)</h3>
-          <p>
-            This tab will load par levels from your Google Sheet and compare against
-            current stock. On Mondays, Twilio will text reorder suggestions based on
-            how far items are off par.
-          </p>
-          <p>
-            <strong>Next step for you:</strong> share the Google Sheets link and we will
-            wire it in here.
-          </p>
-        </section>
-      )}
+      {tab === "inventory" && <InventoryTab />}
     </div>
   );
 }

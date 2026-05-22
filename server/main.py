@@ -5,16 +5,18 @@ import datetime as dt
 import sys
 from pathlib import Path
 
-from typing import Optional
+from typing import List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from clover_client import fetch_sales_report, get_config, load_dotenv, parse_last_week_range  # noqa: E402
+from inventory_orders import prepare_send_orders  # noqa: E402
 
 load_dotenv()
 
@@ -69,6 +71,31 @@ def sales(
         raise HTTPException(status_code=400, detail=str(e)) from e
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
+
+
+class OrderLineIn(BaseModel):
+    name: str
+    onHand: Union[float, int]
+    par: Union[float, int]
+    orderQty: int
+
+
+class SendOrdersIn(BaseModel):
+    lines: List[OrderLineIn]
+    confirm: bool = False
+
+
+@app.post("/api/send-orders")
+def send_orders(body: SendOrdersIn):
+    try:
+        return prepare_send_orders(
+            [line.model_dump() for line in body.lines],
+            confirm=body.confirm,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 dist = ROOT / "web" / "dist"

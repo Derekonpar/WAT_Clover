@@ -1,5 +1,8 @@
 {
   "name": "wat-clover",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "nodemailer": "^6.10.0"
+  }
 }
