@@ -66,13 +66,24 @@ chmod +x run_dashboard.sh
 
 Open **http://127.0.0.1:5173** — Sales tab shows all food & beverage line items with a date range picker. Inventory tab is a placeholder for Google Sheets + Twilio reorder alerts.
 
-Production build:
+Production build (local):
 
 ```bash
 cd web && npm install && npm run build
 cd .. && python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8787
 # UI served from web/dist at http://localhost:8787
 ```
+
+## Deploy on Vercel
+
+1. Import https://github.com/Derekonpar/WAT_Clover in Vercel (root directory: `.`, no monorepo subpath).
+2. **Environment variables** (Project → Settings → Environment Variables):
+   - `CLOVER_API_TOKEN`
+   - `CLOVER_MERCHANT_ID`
+   - `CLOVER_BASE_URL` = `https://api.clover.com` (optional)
+3. Redeploy after env vars are set.
+
+`vercel.json` builds the React app to `web/dist` and routes `/api/*` to the Python FastAPI handler in `api/index.py`.
 
 ## Notes
 

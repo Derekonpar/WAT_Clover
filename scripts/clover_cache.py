@@ -9,7 +9,20 @@ from pathlib import Path
 from typing import Any, Callable, TypeVar
 
 ROOT = Path(__file__).resolve().parents[1]
-CACHE_DIR = ROOT / "data" / "cache"
+
+
+def _default_cache_dir() -> Path:
+    import os
+
+    override = (os.getenv("CLOVER_CACHE_DIR") or "").strip()
+    if override:
+        return Path(override)
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
+        return Path("/tmp/clover-cache")
+    return ROOT / "data" / "cache"
+
+
+CACHE_DIR = _default_cache_dir()
 
 # How long to reuse cached API results (hours). Override with CLOVER_CACHE_TTL_HOURS in .env
 DEFAULT_CACHE_TTL_HOURS = 24
