@@ -1,0 +1,39 @@
+default_timezone: America/Chicago
+default_currency_minor_unit: cents
+
+# Built-in high-level mode uses these assumptions:
+# 1) Read orders in a time range
+# 2) Expand line items
+# 3) Aggregate line-item names matching item_name (case-insensitive contains)
+
+api:
+  base_url_env: CLOVER_BASE_URL
+  merchant_id_env: CLOVER_MERCHANT_ID
+  token_env: CLOVER_API_TOKEN
+
+query_defaults:
+  contains_match: true
+  include_refunds_as_negative: true
+  clover_category: Beer
+
+# Only these line-item names appear on the dashboard (exact match, case-insensitive).
+beer_line_items:
+  - Angry Orchard
+  - Best Day IPA
+  - Blue Moon
+  - Boat Show (Yellow Springs)
+  - Bud Light
+  - Busch Light
+  - Coors Light
+  - Guinness
+  - Michelob Ultra
+  - Miller Lite
+  - Modelo
+  - Truth
+  - Yuengling
+
+outputs:
+  write_json: true
+  write_csv: true
+  output_dir: data
+  logs_dir: logs
