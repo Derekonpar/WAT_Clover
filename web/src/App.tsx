@@ -205,6 +205,7 @@ export default function App() {
                 <table>
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Item</th>
                       <th>Qty</th>
                       <th>Gross</th>
@@ -213,14 +214,15 @@ export default function App() {
                   <tbody>
                     {rows.length === 0 ? (
                       <tr>
-                        <td colSpan={3}>No beer sales in this date range.</td>
+                        <td colSpan={4}>No beer sales in this date range.</td>
                       </tr>
                     ) : (
-                      rows.map((row) => (
+                      rows.map((row, index) => (
                         <tr
                           key={row.name}
                           className={row.quantity_sold === 0 ? "row-zero" : undefined}
                         >
+                          <td>{index + 1}</td>
                           <td>{row.name}</td>
                           <td>{row.quantity_sold}</td>
                           <td className="money">

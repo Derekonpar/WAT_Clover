@@ -327,7 +327,11 @@ def aggregate_line_items(
             row["gross_minor_units"] += line_total
             row["line_count"] += 1
 
-    items = sorted(by_name.values(), key=lambda r: r["name"].lower())
+    items = sorted(
+        by_name.values(),
+        key=lambda r: (r["quantity_sold"], r["gross_minor_units"]),
+        reverse=True,
+    )
     beer_list = allowed_beer_line_items()
 
     totals = {
@@ -348,7 +352,7 @@ def _sales_cache_key(cfg: CloverConfig, category_filter: str, start_d: dt.date, 
     names_key = "|".join(allowed_beer_line_items())
     digest = hashlib.sha256(names_key.encode("utf-8")).hexdigest()[:12]
     return (
-        f"sales_v3:{cfg.merchant_id}:{category_filter.strip().lower()}:"
+        f"sales_v4:{cfg.merchant_id}:{category_filter.strip().lower()}:"
         f"{digest}:{start_d.isoformat()}:{end_d.isoformat()}"
     )
 
