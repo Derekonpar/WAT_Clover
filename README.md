@@ -83,7 +83,21 @@ cd .. && python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8787
    - `CLOVER_BASE_URL` = `https://api.clover.com` (optional)
 3. Redeploy after env vars are set.
 
-Build copies the React app into `public/` and runs FastAPI from `api/index.py` (`pyproject.toml` entrypoint). Do **not** set a separate Output Directory in Vercel project settings — leave it empty so the platform uses `pyproject.toml`.
+Build outputs the React app to `web/dist`. API routes are Node serverless functions in `api/health.js` and `api/sales.js`.
+
+### Vercel env vars (required — not your local `.env`)
+
+Your `.env` file stays on your Mac only (it is gitignored). In Vercel:
+
+**Project → Settings → Environment Variables** add for Production (and Preview):
+
+| Name | Value |
+|------|--------|
+| `CLOVER_API_TOKEN` | your Clover API token |
+| `CLOVER_MERCHANT_ID` | `F94ACDTMC3C51` (or your merchant id) |
+| `CLOVER_BASE_URL` | `https://api.clover.com` |
+
+Then **Redeploy**. Test: `https://your-app.vercel.app/api/health` should return `{"ok":true,...}` not 404.
 
 ## Notes
 

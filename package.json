@@ -1,7 +1,5 @@
 {
   "name": "wat-clover",
   "private": true,
-  "scripts": {
-    "build": "cd web && npm install && npm run build && rm -rf ../public && mkdir -p ../public && cp -r dist/* ../public/"
-  }
+  "type": "module"
 }
