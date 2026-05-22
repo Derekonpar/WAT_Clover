@@ -32,7 +32,10 @@ function formatMoney(minor: number) {
 }
 
 function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function lastWeekRange() {
@@ -75,11 +78,28 @@ export default function App() {
         });
         if (opts?.refresh) qs.set("refresh", "true");
         const res = await fetch(`/api/sales?${qs}`);
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.detail || "Failed to load sales data");
+        const text = await res.text();
+        let data: Record<string, unknown>;
+        try {
+          data = JSON.parse(text) as Record<string, unknown>;
+        } catch {
+          throw new Error(
+            res.ok
+              ? "Invalid API response"
+              : `API ${res.status}: ${text.slice(0, 160).trim() || res.statusText}`,
+          );
         }
-        setReport(data);
+        if (!res.ok) {
+          const detail = data.detail;
+          throw new Error(
+            typeof detail === "string"
+              ? detail
+              : Array.isArray(detail)
+                ? detail.map((d) => (d as { msg?: string }).msg).filter(Boolean).join(", ")
+                : "Failed to load sales data",
+          );
+        }
+        setReport(data as SalesReport);
       } catch (e) {
         setReport(null);
         setError(e instanceof Error ? e.message : "Unknown error");

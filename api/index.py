@@ -16,7 +16,7 @@ from clover_client import fetch_sales_report, get_config, load_dotenv, parse_las
 
 load_dotenv()
 
-app = FastAPI(title="Clover Sales API", version="0.1.0")
+app = FastAPI(title="Clover Sales API", version="0.1.0", redirect_slashes=False)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

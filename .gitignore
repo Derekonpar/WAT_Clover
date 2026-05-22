@@ -4,6 +4,8 @@ data/
 logs/
 web/node_modules/
 web/dist/
+public/
+!public/.gitkeep
 __pycache__/
 *.pyc
 .venv/

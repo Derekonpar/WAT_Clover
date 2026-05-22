@@ -76,14 +76,14 @@ cd .. && python3 -m uvicorn server.main:app --host 0.0.0.0 --port 8787
 
 ## Deploy on Vercel
 
-1. Import https://github.com/Derekonpar/WAT_Clover in Vercel (root directory: `.`, no monorepo subpath).
+1. Import https://github.com/Derekonpar/WAT_Clover in Vercel (root directory: `.`).
 2. **Environment variables** (Project → Settings → Environment Variables):
    - `CLOVER_API_TOKEN`
    - `CLOVER_MERCHANT_ID`
    - `CLOVER_BASE_URL` = `https://api.clover.com` (optional)
 3. Redeploy after env vars are set.
 
-`vercel.json` builds the React app to `web/dist` and routes `/api/*` to the Python FastAPI handler in `api/index.py`.
+Build copies the React app into `public/` and runs FastAPI from `api/index.py` (`pyproject.toml` entrypoint). Do **not** set a separate Output Directory in Vercel project settings — leave it empty so the platform uses `pyproject.toml`.
 
 ## Notes
 
