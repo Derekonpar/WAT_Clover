@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BEER_LINE_ITEMS,
-  DEFAULT_PAR,
+  defaultParForBeer,
   distributorForBeer,
 } from "./beer-line-items";
 import type { InventoryLineInput } from "./order-utils";
@@ -13,13 +13,13 @@ type BeerRow = {
   par: string;
 };
 
-const STORAGE_KEY = "wat-clover-inventory-v2";
+const STORAGE_KEY = "wat-clover-inventory-v4";
 
 function initialRows(): BeerRow[] {
   return BEER_LINE_ITEMS.map((name) => ({
     name,
     onHand: "",
-    par: String(DEFAULT_PAR),
+    par: String(defaultParForBeer(name)),
   }));
 }
 
@@ -33,7 +33,12 @@ function loadSaved(): BeerRow[] | null {
     const filtered = parsed.filter((r) => names.has(r.name as (typeof BEER_LINE_ITEMS)[number]));
     if (filtered.length !== BEER_LINE_ITEMS.length) return null;
     return BEER_LINE_ITEMS.map(
-      (name) => filtered.find((r) => r.name === name) ?? { name, onHand: "", par: String(DEFAULT_PAR) },
+      (name) =>
+        filtered.find((r) => r.name === name) ?? {
+          name,
+          onHand: "",
+          par: String(defaultParForBeer(name)),
+        },
     );
   } catch {
     return null;
@@ -118,7 +123,7 @@ export default function InventoryTab() {
   return (
     <section className="panel inventory-panel">
       <p className="inventory-intro">
-        Enter <strong>on hand</strong> counts. Par defaults to <strong>{DEFAULT_PAR}</strong>.
+        Enter <strong>on hand</strong> counts. <strong>Par</strong> is preset per beer (rounded to multiples of 24).
         Orders go to <strong>Bonbright</strong>, <strong>Heidelberg</strong>, or{" "}
         <strong>Yellow Springs</strong>.
       </p>

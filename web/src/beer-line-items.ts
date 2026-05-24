@@ -26,7 +26,26 @@ export const LINE_ITEM_ALIASES: Record<string, string> = {
   "high noon pinneaple": "High Noon Pineapple",
 };
 
-export const DEFAULT_PAR = 40;
+/** Default par level per beer (units), rounded up to a multiple of 24. */
+export const DEFAULT_PAR_BY_BEER: Record<(typeof BEER_LINE_ITEMS)[number], number> = {
+  "Michelob Ultra": 216,
+  "Miller Lite": 264,
+  Modelo: 144,
+  Guinness: 24,
+  "Angry Orchard": 24,
+  "High Noon Pineapple": 24,
+  "Bud Light": 144,
+  "Coors Light": 144,
+  "Boat Show (Yellow Springs)": 72,
+  Truth: 96,
+  Yuengling: 48,
+  "Busch Light": 48,
+  "Blue Moon": 48,
+};
+
+export function defaultParForBeer(name: (typeof BEER_LINE_ITEMS)[number]): number {
+  return DEFAULT_PAR_BY_BEER[name];
+}
 
 export type DistributorId = "bonbright" | "heidelberg" | "yellow_springs";
 

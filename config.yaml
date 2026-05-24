@@ -27,6 +27,22 @@ beer_line_items:
   - Truth
   - Yuengling
 
+# Default par levels (units) for inventory tab
+default_par_by_beer:
+  Michelob Ultra: 216
+  Miller Lite: 264
+  Modelo: 144
+  Guinness: 24
+  Angry Orchard: 24
+  High Noon Pineapple: 24
+  Bud Light: 144
+  Coors Light: 144
+  "Boat Show (Yellow Springs)": 72
+  Truth: 96
+  Yuengling: 48
+  Busch Light: 48
+  Blue Moon: 48
+
 outputs:
   write_json: true
   write_csv: true
