@@ -1,0 +1,38 @@
+---
+description: WAT Clover inventory par — beer vs liquor, Supabase, API limits
+alwaysApply: true
+---
+
+# Wild Axe inventory par (WAT Clover dashboard)
+
+## Par sources (never user-editable in UI)
+
+| Tab | Par source | Notes |
+|-----|------------|--------|
+| **Beer inventory** | Supabase `usage_weekly` → **6-week average** + `beer_aesthetic_buffer` | Beer allowlist only. Usage avg rounded to **pack size** (`beer_pack_size`), then **+ buffer** per location (36 WAT/LU for Michelob/Miller/Modelo; 18 for others). |
+| **Liquor inventory** | Supabase `liquor_par` table (fixed build-to-par) | **Shots + pour bottles only** — cocktail menu items (Old Fashion, etc.) stay in **Usage** / `usage_weekly`, not on inventory tab. |
+
+## When the user asks to set up or refresh par
+
+1. Ensure `.env` has `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (or publishable key).
+2. Migrations applied: `001_usage_weekly.sql`, `002_liquor_par.sql`.
+3. Run from repo root:
+   ```bash
+   python3 scripts/setup_inventory_par.py
+   ```
+   Use `--refresh` only when Clover usage history must be re-pulled (costs API quota).
+4. Liquor build-to-par edits: update `docs/liquor-par-build.yaml`, then re-run setup (or `python3 scripts/seed_liquor_par.py`).
+
+## Clover API discipline
+
+- Inventory tabs load par from **Supabase only** (server caches 5 minutes).
+- Do **not** call Clover on every inventory tab open.
+- Usage sync (`POST /api/usage/sync` or setup script) is the only routine that pulls multi-week Clover history; prefer cache (`refresh=false`).
+
+## User provides a liquor par list
+
+Convert to `docs/liquor-par-build.yaml` (`item_name`, `wat`, `lu` — exact Clover names), run `setup_inventory_par.py` or `seed_liquor_par.py`, and confirm on the liquor inventory tab.
+
+## Liquor vs Shots duplicates
+
+When the same spirit exists as both a **Liquor** SKU and a **Shots** SKU (e.g. `Patron SHOT ONLY` vs `Patron Shot`), hide the Liquor duplicate and keep the Shots row. Map in `config.yaml` → `liquor_drop_for_shots`; sales on the dropped SKU roll up to the Shots item in usage/inventory.

@@ -24,23 +24,24 @@ export const LINE_ITEM_ALIASES: Record<string, string> = {
   "hn pineapple": "High Noon Pineapple",
   "high noon pineapple": "High Noon Pineapple",
   "high noon pinneaple": "High Noon Pineapple",
+  "high noon pinapple": "High Noon Pineapple",
 };
 
-/** Default par level per beer (units), rounded up to a multiple of 24. */
+/** Placeholder par before Supabase load (aesthetic buffer only — Michelob/Miller/Modelo 36, else 18). */
 export const DEFAULT_PAR_BY_BEER: Record<(typeof BEER_LINE_ITEMS)[number], number> = {
-  "Michelob Ultra": 216,
-  "Miller Lite": 264,
-  Modelo: 144,
-  Guinness: 24,
-  "Angry Orchard": 24,
-  "High Noon Pineapple": 24,
-  "Bud Light": 144,
-  "Coors Light": 144,
-  "Boat Show (Yellow Springs)": 72,
-  Truth: 96,
-  Yuengling: 48,
-  "Busch Light": 48,
-  "Blue Moon": 48,
+  "Michelob Ultra": 36,
+  "Miller Lite": 36,
+  Modelo: 36,
+  Guinness: 18,
+  "Angry Orchard": 18,
+  "High Noon Pineapple": 18,
+  "Bud Light": 18,
+  "Coors Light": 18,
+  "Boat Show (Yellow Springs)": 18,
+  Truth: 18,
+  Yuengling: 18,
+  "Busch Light": 18,
+  "Blue Moon": 18,
 };
 
 export function defaultParForBeer(name: (typeof BEER_LINE_ITEMS)[number]): number {

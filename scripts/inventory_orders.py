@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 from typing import Any
 
 from clover_client import BEER_LINE_ITEMS, canonical_beer_name
+from beer_pack import pack_size_for_beer
 
 DISTRIBUTORS = [
     {
@@ -42,14 +43,7 @@ DISTRIBUTORS = [
 
 
 def _pack_size(dist_id: str, beer_name: str) -> int:
-    beer = beer_name.strip().lower()
-    if dist_id == "bonbright":
-        return 8 if beer == "coors light" else 12
-    if dist_id == "heidelberg":
-        return 24
-    if dist_id == "yellow_springs":
-        return 12
-    return 12
+    return pack_size_for_beer(beer_name)
 
 
 def _normalize_packs(units_needed: int, pack_size: int) -> dict[str, int]:

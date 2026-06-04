@@ -10,6 +10,10 @@ export type InventoryLineInput = {
   onHand: number;
   par: number;
   orderQty: number;
+  watOnHand?: number;
+  luOnHand?: number;
+  watPar?: number;
+  luPar?: number;
 };
 
 export type PackLine = {

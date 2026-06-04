@@ -1,0 +1,56 @@
+# Fixed build-to-par for liquor inventory (shots + pour bottles).
+
+merchant_id: F94ACDTMC3C51
+
+items:
+  Tito Shot:
+    wat: 4
+    lu: 4
+  Patron Shot:
+    wat: 4
+    lu: 4
+  Crown Royal Apple Shot:
+    wat: 4
+    lu: 4
+  Captain Morgan Shot:
+    wat: 4
+    lu: 4
+  Jack Daniel Shot:
+    wat: 4
+    lu: 4
+  Woodford Reserve Shot:
+    wat: 4
+    lu: 4
+  Amaretto:
+    wat: 4
+    lu: 4
+  Svedka Blue Raspberry:
+    wat: 4
+    lu: 4
+  Knobb Creek Maple:
+    wat: 4
+    lu: 4
+  Cruzan Vanilla:
+    wat: 4
+    lu: 4
+  Triple Sec:
+    wat: 4
+    lu: 4
+  Strawberry Pucker:
+    wat: 4
+    lu: 4
+  Orange bitters:
+    wat: 4
+    lu: 4
+  Midori:
+    wat: 4
+    lu: 4
+  Simple Syrup:
+    wat: 4
+    lu: 4
+  Grenadine:
+    wat: 4
+    lu: 4
+  Sour mix:
+    wat: 4
+    lu: 4

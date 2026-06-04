@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { LocationOnHandCell, LocationParCell } from "./LocationReviewCells";
 import {
   buildDistributorOrdersFromLines,
   formatEmailBody,
@@ -82,6 +83,10 @@ async function postSendOrders(
 }
 
 export default function OrderReviewPage({ lines, onBack, onSent }: Props) {
+  const lineDetails = useMemo(
+    () => new Map(lines.map((l) => [l.name, l])),
+    [lines],
+  );
   const fallback = buildDistributorOrdersFromLines(lines);
   const [distributors, setDistributors] = useState<DistributorOrder[]>(fallback);
   const [fromEmail, setFromEmail] = useState<string | null>(null);
@@ -153,9 +158,9 @@ export default function OrderReviewPage({ lines, onBack, onSent }: Props) {
 
       <h2 className="review-title">Review orders by distributor</h2>
       <p className="review-intro">
-        Quantities are rounded up to full cases (Bonbright: 12-pack, Coors 8-pack ·
-        Heidelberg: 24-pack · Yellow Springs: 12-pack). When you confirm, one email
-        per distributor is sent from your configured Gmail account.
+        Pack sizes come from Supabase <code>beer_pack_size</code> (Bonbright: 12, Coors 8 ·
+        Heidelberg: 24 · Yellow Springs: 12). When you confirm, one email per distributor is sent
+        from your configured Gmail account.
       </p>
 
       {fromEmail && (
@@ -167,7 +172,7 @@ export default function OrderReviewPage({ lines, onBack, onSent }: Props) {
       {loadingReview && <p className="muted">Loading order preview…</p>}
 
       {distributors.map((d) => (
-        <DistributorBlock key={d.distributorId} order={d} />
+        <DistributorBlock key={d.distributorId} order={d} lineDetails={lineDetails} />
       ))}
 
       {error && <div className="error">{error}</div>}
@@ -208,7 +213,13 @@ export default function OrderReviewPage({ lines, onBack, onSent }: Props) {
   );
 }
 
-function DistributorBlock({ order }: { order: DistributorOrder }) {
+function DistributorBlock({
+  order,
+  lineDetails,
+}: {
+  order: DistributorOrder;
+  lineDetails: Map<string, InventoryLineInput>;
+}) {
   const body = formatEmailBody(order.distributor, order.lines);
 
   return (
@@ -221,8 +232,8 @@ function DistributorBlock({ order }: { order: DistributorOrder }) {
         <thead>
           <tr>
             <th>Item</th>
-            <th>On hand</th>
-            <th>Par</th>
+            <th>On hand (WAT / LU)</th>
+            <th>Par (WAT / LU)</th>
             <th>Need</th>
             <th>Pack</th>
             <th>Order</th>
@@ -232,8 +243,12 @@ function DistributorBlock({ order }: { order: DistributorOrder }) {
           {order.lines.map((line) => (
             <tr key={line.name}>
               <td>{line.name}</td>
-              <td>{line.onHand}</td>
-              <td>{line.par}</td>
+              <td>
+                <LocationOnHandCell line={lineDetails.get(line.name)} />
+              </td>
+              <td>
+                <LocationParCell line={lineDetails.get(line.name)} />
+              </td>
               <td>{line.unitsNeeded}</td>
               <td>{line.packSize}</td>
               <td className="order-cell">

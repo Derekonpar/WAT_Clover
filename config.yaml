@@ -28,6 +28,55 @@ beer_line_items:
   - Yuengling
 
 # Default par levels (units) for inventory tab
+# Beer SKUs that may appear under Clover category "Liquor" (e.g. High Noon Pinapple)
+# are listed in beer_line_items and excluded from liquor catalog/usage via aliases.
+
+# Clover categories for liquor inventory tab (also CLOVER_LIQUOR_CATEGORIES env)
+# Shots is included via category hint; listed here for clarity.
+liquor_categories:
+  - Liquor
+  - Wine
+  - Cocktail
+  - Shots
+
+# Hide Liquor SKUs when the same spirit exists under Shots (sales remap to the shot).
+liquor_drop_for_shots:
+  Patron SHOT ONLY: Patron Shot
+  Crown Apple Whiskey: Crown Royal Apple Shot
+  Jack Daniel's Whiskey: Jack Daniel Shot
+  Captain Morgan Rum: Captain Morgan Shot
+  Woodford Reserve: Woodford Reserve Shot
+  Titos Vodka: Tito Shot
+
+# Excluded from liquor usage + inventory (Clover SKUs not tracked here).
+liquor_catalog_exclude:
+  - Patron Cocktail Use
+  - "Fireball Shot/ Cocktail Use"
+
+# Hidden on Usage tab when category filter is "All" (still visible under Liquor).
+usage_all_view_exclude:
+  - Patron Cocktail Use
+  - "Fireball Shot/ Cocktail Use"
+  - High Noon Black Cherry
+
+# Liquor inventory tab: Shots + pour bottles (cocktail menu items stay in usage/Supabase only).
+liquor_inventory_extra:
+  - Amaretto
+  - Svedka Blue Raspberry
+  - Knobb Creek Maple
+  - Cruzan Vanilla
+  - Triple Sec
+  - Strawberry Pucker
+  - Orange bitters
+  - Midori
+  - Simple Syrup
+  - Grenadine
+  - Sour mix
+
+# Fixed build-to-par for liquor / shots (cocktails). Primary source: Supabase liquor_par table.
+# Optional fallback until rows are in the database:
+liquor_par_by_item:
+
 default_par_by_beer:
   Michelob Ultra: 216
   Miller Lite: 264

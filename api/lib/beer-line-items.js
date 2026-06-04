@@ -23,6 +23,7 @@ export const LINE_ITEM_ALIASES = {
   "hn pineapple": "High Noon Pineapple",
   "high noon pineapple": "High Noon Pineapple",
   "high noon pinneaple": "High Noon Pineapple",
+  "high noon pinapple": "High Noon Pineapple",
 };
 
 export function canonicalBeerName(lineName) {
