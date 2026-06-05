@@ -11,7 +11,9 @@ def _format_rep_notes(lines: list[dict[str, Any]]) -> str:
     return "; ".join(parts)
 
 
-def prepare_liquor_orders(lines: list[dict[str, Any]], *, confirm: bool = False) -> dict[str, Any]:
+def prepare_liquor_orders(
+    lines: list[dict[str, Any]], *, confirm: bool = False, submit: bool = False
+) -> dict[str, Any]:
     """
     Build Provi-ready order payload:
     - catalog: product ID + unit qty (one size per SKU)
@@ -87,9 +89,9 @@ def prepare_liquor_orders(lines: list[dict[str, Any]], *, confirm: bool = False)
         try:
             from provi.build_order import build_provi_cart
 
-            built = build_provi_cart(catalog_lines, rep_notes_text, submit=False)
+            built = build_provi_cart(catalog_lines, rep_notes_text, submit=submit)
             payload["provi"] = built
-            payload["mode"] = "cart_built" if built.get("ok") else "partial"
+            payload["mode"] = built.get("mode") or ("cart_built" if built.get("ok") else "partial")
             payload["message"] = built.get("message") or payload["message"]
             if built.get("errors"):
                 payload["provi_errors"] = built["errors"]

@@ -17,6 +17,8 @@ PROVI_LOCATION_NAME = os.getenv("PROVI_LOCATION_NAME", "Wild Axe")
 PROVI_RETAILER_ID = os.getenv("PROVI_RETAILER_ID", "403032")
 # OHLQ account # shown in Provi for Wild Axe Throwing (On Par uses a different number).
 PROVI_OHLQ_ACCOUNT_NUMBER = os.getenv("PROVI_OHLQ_ACCOUNT_NUMBER", "9609977")
+# Set to false locally to build carts without placing orders.
+PROVI_ALLOW_SUBMIT = os.getenv("PROVI_ALLOW_SUBMIT", "true").lower() in ("1", "true", "yes")
 
 
 def ensure_dirs() -> None:

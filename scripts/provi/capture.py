@@ -27,6 +27,7 @@ INTERESTING_URL_HINTS = (
 SUBMIT_BLOCK_PATTERNS = (
     re.compile(r"place[-_]?order", re.I),
     re.compile(r"submit[-_]?order", re.I),
+    re.compile(r"/cart/submit", re.I),
     re.compile(r"/orders/[^/?]+/submit", re.I),
     re.compile(r"/checkout/[^/?]+/submit", re.I),
     re.compile(r"/checkout/submit", re.I),

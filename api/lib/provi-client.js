@@ -2,6 +2,11 @@ const PROVI_APP_URL = (process.env.PROVI_APP_URL || "https://app.provi.com").rep
 const PROVI_RETAILER_ID = process.env.PROVI_RETAILER_ID || "403032";
 const PROVI_OHLQ_ACCOUNT_NUMBER = process.env.PROVI_OHLQ_ACCOUNT_NUMBER || "9609977";
 const PROVI_LOCATION_NAME = process.env.PROVI_LOCATION_NAME || "Wild Axe";
+const PROVI_ALLOW_SUBMIT = (process.env.PROVI_ALLOW_SUBMIT ?? "true").toLowerCase() in {
+  "1": true,
+  true: true,
+  yes: true,
+};
 const DEFAULT_OHLQ_DISTRIBUTOR_ID = 16114;
 
 export class ProviApiError extends Error {
@@ -246,6 +251,15 @@ export class ProviClient {
     });
   }
 
+  async submitCart() {
+    const result = await this.post("/api/retailer/cart/submit");
+    if (result && typeof result === "object") {
+      if (result.cart && typeof result.cart === "object") return result.cart;
+      if (result.id != null || result.submitted_at != null) return result;
+    }
+    return { raw: result };
+  }
+
   async getLocationContext() {
     const authRows = await this.get("/api/retailer/retailer_user_authentications");
     const rows = Array.isArray(authRows) ? authRows : [];
@@ -310,4 +324,8 @@ export class ProviClient {
       expected_location_name: PROVI_LOCATION_NAME,
     };
   }
+}
+
+export function proviSubmitAllowed() {
+  return PROVI_ALLOW_SUBMIT;
 }

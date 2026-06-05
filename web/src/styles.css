@@ -609,6 +609,15 @@ tr.row-zero td {
   padding-left: 1.25rem;
 }
 
+.provi-cart-ready-block {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.provi-rep-notes-line {
+  margin-top: 0.5rem;
+}
+
 .copy-bar {
   margin-top: 0.75rem;
 }

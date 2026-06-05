@@ -25,9 +25,13 @@ type ReviewResponse = {
   rep_notes_text?: string;
   provi?: {
     ok?: boolean;
+    mode?: string;
     cart_id?: number;
     cart_total?: number;
     order_id?: number;
+    submitted_at?: string | null;
+    rep_notes?: string;
+    location?: { ohlq_account_number?: string; retailer_id?: number };
     added?: Array<{
       name: string;
       provi_product_id: string;
@@ -43,11 +47,11 @@ type ReviewResponse = {
   provi_errors?: string[];
 };
 
-async function postLiquorOrders(lines: LiquorLineInput[], confirm: boolean) {
+async function postLiquorOrders(lines: LiquorLineInput[], confirm: boolean, submit: boolean) {
   const res = await fetch("/api/send-liquor-orders", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lines, confirm }),
+    body: JSON.stringify({ lines, confirm, submit }),
   });
   const text = await res.text();
   let data: ReviewResponse;
@@ -73,10 +77,11 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
   const [repNotesLines, setRepNotesLines] = useState<LiquorRepNotesLine[]>([]);
   const [repNotesText, setRepNotesText] = useState("");
   const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [proviBuilt, setProviBuilt] = useState<ReviewResponse["provi"] | null>(null);
+  const [proviResult, setProviResult] = useState<ReviewResponse["provi"] | null>(null);
+  const [orderSent, setOrderSent] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,7 +90,7 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
       setLoading(true);
       setError(null);
       try {
-        const data = await postLiquorOrders(lines, false);
+        const data = await postLiquorOrders(lines, false, false);
         if (cancelled) return;
         setCatalogLines(data.catalog_lines ?? []);
         setRepNotesLines(data.rep_notes_lines ?? []);
@@ -118,27 +123,34 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
     }
   };
 
-  const handleConfirm = async () => {
-    setConfirming(true);
+  const handleSendOrder = async () => {
+    if (orderSent) return;
+    setSending(true);
     setError(null);
     setSuccess(null);
     try {
-      const data = await postLiquorOrders(lines, true);
-      setProviBuilt(data.provi ?? null);
-      const proviErr = data.provi_error || (data.provi_errors?.length ? data.provi_errors.join("; ") : null);
+      const data = await postLiquorOrders(lines, true, true);
+      setProviResult(data.provi ?? null);
+      const proviErr =
+        data.provi_error ||
+        (data.provi_errors?.length ? data.provi_errors.join("; ") : null);
       if (proviErr && !data.provi?.ok) {
         setError(proviErr);
+        return;
       }
+      setOrderSent(true);
       setSuccess(
-        data.message ||
-          "Provi cart updated — open Provi to review and Send when ready.",
+        data.message || "Order sent to Provi — your rep will receive the request.",
       );
-      setTimeout(onSent, 6000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not finalize order");
+      setError(e instanceof Error ? e.message : "Could not send order to Provi");
     } finally {
-      setConfirming(false);
+      setSending(false);
     }
+  };
+
+  const handleDone = () => {
+    onSent();
   };
 
   return (
@@ -149,9 +161,18 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
 
       <h2 className="review-title">Review liquor order for Provi</h2>
       <p className="review-intro">
-        Spirits use <strong>Provi product IDs</strong> (exact SKU — e.g. 9232L, not 9232B).
-        Mixers go in <strong>retailer notes</strong> at checkout. Building the cart calls Provi
-        directly; you still click <strong>Send</strong> in Provi when ready.
+        {orderSent ? (
+          <>
+            Order submitted to <strong>Wild Axe</strong> on Provi. Your rep will receive the
+            request — tap <strong>Done</strong> when finished.
+          </>
+        ) : (
+          <>
+            Spirits use <strong>Provi product IDs</strong> (exact SKU — e.g. 9232L, not 9232B).
+            Mixers go in <strong>retailer notes</strong>. Click <strong>Send order to Provi</strong>{" "}
+            to build the cart and submit automatically.
+          </>
+        )}
       </p>
 
       {loading && <p className="muted">Loading Provi mapping…</p>}
@@ -189,22 +210,24 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
               ))}
             </tbody>
           </table>
-          <div className="copy-bar">
-            <button
-              type="button"
-              className="btn secondary"
-              disabled={!catalogSummary}
-              onClick={() => handleCopy("catalog", catalogSummary)}
-            >
-              {copied === "catalog" ? "Copied!" : "Copy catalog list"}
-            </button>
-          </div>
+          {!orderSent && (
+            <div className="copy-bar">
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={!catalogSummary}
+                onClick={() => handleCopy("catalog", catalogSummary)}
+              >
+                {copied === "catalog" ? "Copied!" : "Copy catalog list"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {repNotesLines.length > 0 && (
         <div className="dist-order-block">
-          <h3 className="review-subtitle">Rep notes — paste at Provi checkout</h3>
+          <h3 className="review-subtitle">Rep notes — included at checkout</h3>
           <table className="review-table">
             <thead>
               <tr>
@@ -224,66 +247,93 @@ export default function LiquorOrderReviewPage({ lines, onBack, onSent }: Props) 
             </tbody>
           </table>
           <pre className="rep-notes-preview">{repNotesText}</pre>
-          <div className="copy-bar">
-            <button
-              type="button"
-              className="btn secondary"
-              disabled={!repNotesText}
-              onClick={() => handleCopy("notes", repNotesText)}
-            >
-              {copied === "notes" ? "Copied!" : "Copy rep notes"}
-            </button>
-          </div>
+          {!orderSent && (
+            <div className="copy-bar">
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={!repNotesText}
+                onClick={() => handleCopy("notes", repNotesText)}
+              >
+                {copied === "notes" ? "Copied!" : "Copy rep notes"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success-banner">{success}</div>}
-      {proviBuilt?.added && proviBuilt.added.length > 0 && (
-        <div className="dist-order-block">
-          <h3 className="review-subtitle">Added to Provi cart</h3>
-          <ul className="provi-added-list">
-            {proviBuilt.added.map((a) => (
-              <li key={`${a.inventory_id}-${a.provi_product_id}`}>
-                {a.name}: {a.units_needed} × {a.resolved_sku ?? a.provi_product_id}
-                {a.container_size ? ` (${a.container_size})` : ""}
-              </li>
-            ))}
-          </ul>
-          {proviBuilt.provi_cart_url && (
+      {orderSent && proviResult && (
+        <div className="dist-order-block provi-cart-ready-block">
+          <h3 className="review-subtitle">Order sent</h3>
+          {proviResult.added && proviResult.added.length > 0 && (
+            <ul className="provi-added-list">
+              {proviResult.added.map((a) => (
+                <li key={`${a.inventory_id}-${a.provi_product_id}`}>
+                  {a.name}: {a.units_needed} × {a.resolved_sku ?? a.provi_product_id}
+                  {a.container_size ? ` (${a.container_size})` : ""}
+                </li>
+              ))}
+            </ul>
+          )}
+          {proviResult.rep_notes && (
+            <p className="muted provi-rep-notes-line">
+              Rep notes: <em>{proviResult.rep_notes}</em>
+            </p>
+          )}
+          {proviResult.cart_total != null && (
             <p className="muted">
-              <a href={proviBuilt.provi_cart_url} target="_blank" rel="noreferrer">
-                Open Provi cart
-              </a>
-              {proviBuilt.cart_total != null && (
-                <> · draft total ${Number(proviBuilt.cart_total).toFixed(2)}</>
-              )}
+              Order total: <strong>${Number(proviResult.cart_total).toFixed(2)}</strong>
+            </p>
+          )}
+          {proviResult.submitted_at && (
+            <p className="muted">
+              Submitted: <strong>{new Date(proviResult.submitted_at).toLocaleString()}</strong>
+            </p>
+          )}
+          {proviResult.location?.ohlq_account_number && (
+            <p className="muted">
+              OHLQ account: <strong>{proviResult.location.ohlq_account_number}</strong>
             </p>
           )}
         </div>
       )}
 
       <div className="inventory-footer">
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={onBack}
-          disabled={confirming}
-        >
-          Edit counts
-        </button>
-        <button
-          type="button"
-          className="btn btn-send ready"
-          onClick={handleConfirm}
-          disabled={
-            confirming ||
-            loading ||
-            (catalogLines.length === 0 && repNotesLines.length === 0)
-          }
-        >
-          {confirming ? "Building Provi cart…" : "Build cart in Provi"}
-        </button>
+        {!orderSent ? (
+          <>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={onBack}
+              disabled={sending}
+            >
+              Edit counts
+            </button>
+            <button
+              type="button"
+              className="btn btn-send ready"
+              onClick={handleSendOrder}
+              disabled={
+                sending ||
+                loading ||
+                (catalogLines.length === 0 && repNotesLines.length === 0)
+              }
+            >
+              {sending ? "Sending to Provi…" : "Send order to Provi"}
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" className="btn secondary" onClick={onBack}>
+              Edit counts
+            </button>
+            <button type="button" className="btn btn-send ready" onClick={handleDone}>
+              Done
+            </button>
+          </>
+        )}
       </div>
     </section>
   );

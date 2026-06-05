@@ -1,8 +1,10 @@
-import { ProviApiError, ProviClient } from "./provi-client.js";
+import { ProviApiError, ProviClient, proviSubmitAllowed } from "./provi-client.js";
 
 export async function buildProviCart(catalogLines, repNotesText = "", { submit = false } = {}) {
-  if (submit) {
-    throw new ProviApiError("Provi submit is not enabled yet. Cart is built as draft only.");
+  if (submit && !proviSubmitAllowed()) {
+    throw new ProviApiError(
+      "Provi submit is disabled. Set PROVI_ALLOW_SUBMIT=true to send orders from the dashboard.",
+    );
   }
 
   const client = new ProviClient();
@@ -49,21 +51,43 @@ export async function buildProviCart(catalogLines, repNotesText = "", { submit =
   }
 
   const cart = await client.getCart();
+  let cartTotal = cart.total;
+  let submittedAt = null;
+
+  if (submit) {
+    if (errors.length) {
+      throw new ProviApiError(`Cannot submit cart with errors: ${errors.join("; ")}`);
+    }
+    if (!added.length && !String(repNotesText || "").trim()) {
+      throw new ProviApiError("Nothing to submit — cart is empty.");
+    }
+    const submitted = await client.submitCart();
+    submittedAt = submitted.submitted_at ?? null;
+    cartTotal = submitted.total ?? cartTotal;
+  }
+
+  const mode = submit ? "submitted" : "cart_built";
+  const message = submit
+    ? errors.length === 0
+      ? "Order sent to Provi — your rep will receive the request."
+      : "Order partially sent; see errors."
+    : errors.length === 0
+      ? "Provi cart updated — review in app and click Send when ready."
+      : "Cart partially built; see errors.";
+
   return {
     ok: errors.length === 0,
-    mode: "cart_built",
-    submit: false,
+    mode,
+    submit,
     location,
     cart_id: cart.id,
-    cart_total: cart.total,
+    cart_total: cartTotal,
     order_id: orderId,
+    submitted_at: submittedAt,
     added,
     rep_notes: repNotesText,
     errors,
-    message:
-      errors.length === 0
-        ? "Provi cart updated — review in app and click Send when ready."
-        : "Cart partially built; see errors.",
+    message,
     provi_cart_url: "https://app.provi.com/cart",
   };
 }

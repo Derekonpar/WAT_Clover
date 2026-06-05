@@ -1,9 +1,10 @@
-"""Build Provi cart from liquor dashboard order payload (no submit)."""
+"""Build Provi cart from liquor dashboard order payload (optional submit)."""
 from __future__ import annotations
 
 from typing import Any
 
 from provi.client import ProviApiError, ProviClient
+from provi.paths import PROVI_ALLOW_SUBMIT
 
 
 def build_provi_cart(
@@ -16,11 +17,11 @@ def build_provi_cart(
     1. Resolve each provi_product_id → inventory_id (exact SKU match among variants)
     2. POST update_cart for each line
     3. PUT retailer_notes on OHLQ order
-    Does NOT submit unless submit=True (not implemented — always dry run).
+    4. POST /api/retailer/cart/submit when submit=True
     """
-    if submit:
+    if submit and not PROVI_ALLOW_SUBMIT:
         raise ProviApiError(
-            "Provi submit is not enabled yet. Cart is built as draft only."
+            "Provi submit is disabled. Set PROVI_ALLOW_SUBMIT=true to send orders from the dashboard."
         )
 
     client = ProviClient()
@@ -67,22 +68,45 @@ def build_provi_cart(
         raise ProviApiError("; ".join(errors))
 
     cart = client.get_cart()
-    payload = {
-        "ok": len(errors) == 0,
-        "mode": "cart_built",
-        "submit": False,
-        "location": location,
-        "cart_id": cart.get("id"),
-        "cart_total": cart.get("total"),
-        "order_id": order_id,
-        "added": added,
-        "rep_notes": rep_notes_text,
-        "errors": errors,
-        "message": (
+    cart_total = cart.get("total")
+    submitted_at = None
+
+    if submit:
+        if errors:
+            raise ProviApiError("Cannot submit cart with errors: " + "; ".join(errors))
+        if not added and not rep_notes_text.strip():
+            raise ProviApiError("Nothing to submit — cart is empty.")
+        submitted = client.submit_cart()
+        submitted_at = submitted.get("submitted_at")
+        cart_total = submitted.get("total", cart_total)
+
+    mode = "submitted" if submit else "cart_built"
+    if submit:
+        message = (
+            "Order sent to Provi — your rep will receive the request."
+            if not errors
+            else "Order partially sent; see errors."
+        )
+    else:
+        message = (
             "Provi cart updated — review in app and click Send when ready."
             if not errors
             else "Cart partially built; see errors."
-        ),
+        )
+
+    payload = {
+        "ok": len(errors) == 0,
+        "mode": mode,
+        "submit": submit,
+        "location": location,
+        "cart_id": cart.get("id"),
+        "cart_total": cart_total,
+        "order_id": order_id,
+        "submitted_at": submitted_at,
+        "added": added,
+        "rep_notes": rep_notes_text,
+        "errors": errors,
+        "message": message,
         "provi_cart_url": "https://app.provi.com/cart",
     }
     return payload

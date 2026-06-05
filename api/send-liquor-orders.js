@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const lines = body?.lines;
     const confirm = Boolean(body?.confirm);
+    const submit = Boolean(body?.submit);
 
     if (!Array.isArray(lines) || lines.length === 0) {
       return res.status(400).json({ detail: "Expected { lines: [...] }" });
@@ -32,13 +33,15 @@ export default async function handler(req, res) {
     if (confirm) {
       try {
         const built = await buildProviCart(order.catalog_lines, order.rep_notes_text, {
-          submit: false,
+          submit,
         });
         payload.provi = built;
-        payload.mode = built.ok ? "cart_built" : "partial";
+        payload.mode = built.mode || (built.ok ? "cart_built" : "partial");
         payload.message =
           built.message ||
-          "Provi cart updated — open Provi to review and Send when ready.";
+          (submit
+            ? "Order sent to Provi."
+            : "Provi cart updated — open Provi to review and Send when ready.");
         if (built.errors?.length) payload.provi_errors = built.errors;
       } catch (e) {
         payload.provi_error = e instanceof Error ? e.message : String(e);

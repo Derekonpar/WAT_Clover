@@ -102,6 +102,7 @@ class OrderLineIn(BaseModel):
 class SendOrdersIn(BaseModel):
     lines: List[OrderLineIn]
     confirm: bool = False
+    submit: bool = False
 
 
 @app.get("/api/supabase/health")
@@ -299,6 +300,7 @@ def send_liquor_orders(body: SendOrdersIn):
         return prepare_liquor_orders(
             [line.model_dump() for line in body.lines],
             confirm=body.confirm,
+            submit=body.submit,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e

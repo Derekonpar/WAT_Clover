@@ -325,3 +325,14 @@ class ProviClient:
             f"/api/retailer/orders/{order_id}",
             body={"order": {"retailer_notes": notes, "backup_notes": None}},
         )
+
+    def submit_cart(self) -> dict[str, Any]:
+        """Place the current draft cart (same as clicking Send in Provi)."""
+        result = self.post("/api/retailer/cart/submit")
+        if isinstance(result, dict):
+            inner = result.get("cart")
+            if isinstance(inner, dict):
+                return inner
+            if result.get("id") is not None or result.get("submitted_at") is not None:
+                return result
+        return {"raw": result}
