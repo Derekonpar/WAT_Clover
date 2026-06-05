@@ -169,7 +169,8 @@ export async function suggestedParFromSupabase(weeks = 6, { forceRefresh = false
     const avgWeekly = weekly.reduce((s, q) => s + q, 0) / weeks;
     const pack = await packSizeForBeerAsync(null, beer);
     const buf = await aestheticBufferForBeer(beer);
-    const basePar = roundParToPack(avgWeekly, pack);
+    // Clover usage is both coolers combined — split evenly for WAT / LU order pars.
+    const basePar = roundParToPack(avgWeekly / 2, pack);
     const watPar = basePar + buf.wat;
     const luPar = basePar + buf.lu;
     itemsOut.push({
@@ -222,7 +223,7 @@ export async function suggestedParFromSupabase(weeks = 6, { forceRefresh = false
     items: itemsOut,
     scope: "beer",
     note:
-      "Beer only: 6-week Sun–Sat average, rounded to pack size, plus aesthetic buffer per location (beer_aesthetic_buffer).",
+      "Beer only: 6-week Sun–Sat average split 50/50 per cooler, rounded to pack size, plus aesthetic buffer per location (beer_aesthetic_buffer).",
     from_cache: false,
   };
 

@@ -112,8 +112,8 @@ def suggested_par_from_supabase(
     force_refresh: bool = False,
 ) -> dict[str, Any]:
     """
-    Beer only: par = 6-week avg weekly usage rounded to pack size + aesthetic buffer.
-    WAT and LU buffers come from beer_aesthetic_buffer (Clover does not split usage).
+    Beer only: par = half of 6-week avg usage per cooler (rounded to pack) + aesthetic buffer.
+    Clover reports combined sales; usage is split 50/50 between WAT and LU.
     """
     from beer_buffer import aesthetic_buffer_for_beer
     from beer_pack import pack_size_for_beer
@@ -183,7 +183,7 @@ def suggested_par_from_supabase(
         avg_weekly = sum(weekly) / weeks if weeks else 0.0
         pack = _pack(beer)
         buf = _buffer(beer)
-        base = round_par_to_pack(avg_weekly, pack)
+        base = round_par_to_pack(avg_weekly / 2, pack)
         wat_par = base + buf["wat"]
         lu_par = base + buf["lu"]
         items_out.append(
@@ -242,7 +242,7 @@ def suggested_par_from_supabase(
         "items": items_out,
         "scope": "beer",
         "note": (
-            "Beer only: 6-week Sun–Sat average, rounded to pack size, "
+            "Beer only: 6-week Sun–Sat average split 50/50 per cooler, rounded to pack size, "
             "plus aesthetic buffer per location (beer_aesthetic_buffer)."
         ),
         "from_cache": False,

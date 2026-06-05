@@ -174,8 +174,9 @@ export default function InventoryTab() {
     <section className="panel inventory-panel">
       <p className="inventory-intro">
         Orders go out on <strong>Sunday</strong>. Weeks run <strong>Sunday–Saturday</strong>.
-        Par is the trailing <strong>6-week average</strong> (rounded to each beer&apos;s case pack
-        size) plus an <strong>aesthetic buffer</strong> so coolers look stocked. Click{" "}
+        Par is half the trailing <strong>6-week average</strong> per cooler (sales are combined in
+        Clover), rounded to each beer&apos;s case pack size, plus an <strong>aesthetic buffer</strong>{" "}
+        per location. Click{" "}
         <strong>Update par for this week&apos;s orders</strong> first — it syncs the last complete
         week to Supabase and refreshes par. Then enter on-hand for WAT and LU.
       </p>

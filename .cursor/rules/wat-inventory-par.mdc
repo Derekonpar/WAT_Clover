@@ -9,7 +9,7 @@ alwaysApply: true
 
 | Tab | Par source | Notes |
 |-----|------------|--------|
-| **Beer inventory** | Supabase `usage_weekly` → **6-week average** + `beer_aesthetic_buffer` | Beer allowlist only. Usage avg rounded to **pack size** (`beer_pack_size`), then **+ buffer** per location (36 WAT/LU for Michelob/Miller/Modelo; 18 for others). |
+| **Beer inventory** | Supabase `usage_weekly` → **6-week average** + `beer_aesthetic_buffer` | Beer allowlist only. Clover usage is **both coolers combined** — use **half** the avg per WAT/LU, round to **pack size** (`beer_pack_size`), then **+ buffer** per location (36 WAT/LU for Michelob/Miller/Modelo; 18 for others). |
 | **Liquor inventory** | Supabase `liquor_par` table (fixed build-to-par) | **Shots + pour bottles only** — cocktail menu items (Old Fashion, etc.) stay in **Usage** / `usage_weekly`, not on inventory tab. |
 
 ## When the user asks to set up or refresh par
