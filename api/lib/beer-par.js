@@ -19,6 +19,21 @@ function roundParToPack(units, packSize) {
   return Math.ceil(u / pack) * pack;
 }
 
+function dedupeUsageBatch(batch) {
+  const byKey = new Map();
+  for (const row of batch) {
+    const key = `${row.merchant_id}|${row.week_start}|${row.item_name}`;
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.quantity_sold += row.quantity_sold;
+      existing.gross_minor_units += row.gross_minor_units;
+    } else {
+      byKey.set(key, { ...row });
+    }
+  }
+  return [...byKey.values()];
+}
+
 async function upsertUsageWeekly(batch) {
   if (!batch.length) return;
   const { base, key } = supabaseConfig();
@@ -27,13 +42,16 @@ async function upsertUsageWeekly(batch) {
       "Missing SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in Vercel environment variables.",
     );
   }
-  const res = await fetch(`${base}/rest/v1/usage_weekly`, {
+  const rows = dedupeUsageBatch(batch);
+  // PostgREST upsert — must name conflict columns (matches usage_weekly_unique).
+  const url = `${base}/rest/v1/usage_weekly?on_conflict=merchant_id,week_start,item_name`;
+  const res = await fetch(url, {
     method: "POST",
     headers: supabaseHeaders(key, {
       "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates",
+      Prefer: "resolution=merge-duplicates,return=minimal",
     }),
-    body: JSON.stringify(batch),
+    body: JSON.stringify(rows),
   });
   if (!res.ok) {
     const body = await res.text();
