@@ -143,3 +143,30 @@ export function formatLocationPair(
 ): string {
   return `WAT ${wat}${sep}LU ${lu}`;
 }
+
+/** Single-count backup stock (one column, no WAT/LU split). */
+export type SingleLocationCounts = {
+  onHand: string;
+  par: string;
+};
+
+export type ParsedSingleLocationRow = SingleLocationCounts & {
+  onHandNum: number | null;
+  parNum: number | null;
+  orderQty: number | null;
+};
+
+export function parseSingleLocationRow(row: SingleLocationCounts): ParsedSingleLocationRow {
+  const onHandNum = parseNonNegative(row.onHand);
+  const parNum = parseNonNegative(row.par);
+  const allFilled = onHandNum != null && parNum != null;
+  const orderQty =
+    allFilled && parNum > 0 ? Math.max(0, Math.round(parNum - onHandNum)) : null;
+  return { ...row, onHandNum, parNum, orderQty };
+}
+
+export function rowReadyForBackupOrder(parsed: ParsedSingleLocationRow): boolean {
+  return (
+    parsed.onHandNum != null && parsed.parNum != null && parsed.parNum > 0
+  );
+}

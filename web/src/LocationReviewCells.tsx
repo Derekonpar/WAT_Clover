@@ -7,26 +7,28 @@ type LocLine = {
   luOnHand?: number;
   watPar?: number;
   luPar?: number;
+  backupOnHand?: number;
+  backupPar?: number;
 };
 
 export function LocationOnHandCell({ line }: { line?: LocLine }) {
   if (line?.watOnHand != null && line?.luOnHand != null) {
-    return (
-      <span className="loc-split">
-        {formatLocationPair(line.watOnHand, line.luOnHand)}
-      </span>
-    );
+    const parts = [formatLocationPair(line.watOnHand, line.luOnHand)];
+    if (line.backupOnHand != null) {
+      parts.push(`Back ${line.backupOnHand}`);
+    }
+    return <span className="loc-split">{parts.join(" · ")}</span>;
   }
   return <>{line?.onHand ?? "—"}</>;
 }
 
 export function LocationParCell({ line }: { line?: LocLine }) {
   if (line?.watPar != null && line?.luPar != null) {
-    return (
-      <span className="loc-split">
-        {formatLocationPair(line.watPar, line.luPar)}
-      </span>
-    );
+    const parts = [formatLocationPair(line.watPar, line.luPar)];
+    if (line.backupPar != null) {
+      parts.push(`Back ${line.backupPar}`);
+    }
+    return <span className="loc-split">{parts.join(" · ")}</span>;
   }
   return <>{line?.par ?? "—"}</>;
 }

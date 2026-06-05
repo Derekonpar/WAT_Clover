@@ -1,6 +1,4 @@
-# Fixed build-to-par for liquor inventory (WAT + LU).
-# Derived from 1-week usage (2026-05-18): ceil(bottles/wk) + 1 per item.
-# Bottle sizes: 1 L default; Patron, Midori, Knobb Creek Maple, Svedka = 750 mL.
+# Front cooler par (WAT + LU). Backup par (4 each) is fixed in the liquor inventory UI only.
 
 merchant_id: F94ACDTMC3C51
 
@@ -8,51 +6,51 @@ items:
   Tito Shot:
     wat: 4
     lu: 4
-  Sour mix:
+  Patron Shot:
+    wat: 4
+    lu: 4
+  Crown Royal Apple Shot:
+    wat: 4
+    lu: 4
+  Captain Morgan Shot:
+    wat: 4
+    lu: 4
+  Jack Daniel Shot:
     wat: 4
     lu: 4
   Woodford Reserve Shot:
-    wat: 3
-    lu: 3
-  Strawberry Pucker:
-    wat: 3
-    lu: 3
-  Patron Shot:
-    wat: 3
-    lu: 3
-  Crown Royal Apple Shot:
-    wat: 2
-    lu: 2
-  Triple Sec:
-    wat: 2
-    lu: 2
+    wat: 4
+    lu: 4
   Amaretto:
-    wat: 2
-    lu: 2
-  Knobb Creek Maple:
-    wat: 2
-    lu: 2
-  Cruzan Vanilla:
-    wat: 2
-    lu: 2
-  Captain Morgan Shot:
-    wat: 2
-    lu: 2
-  Simple Syrup:
-    wat: 2
-    lu: 2
-  Jack Daniel Shot:
-    wat: 2
-    lu: 2
+    wat: 4
+    lu: 4
   Svedka Blue Raspberry:
-    wat: 2
-    lu: 2
-  Midori:
-    wat: 2
-    lu: 2
-  Grenadine:
-    wat: 2
-    lu: 2
+    wat: 4
+    lu: 4
+  Knobb Creek Maple:
+    wat: 4
+    lu: 4
+  Cruzan Vanilla:
+    wat: 4
+    lu: 4
+  Triple Sec:
+    wat: 4
+    lu: 4
+  Strawberry Pucker:
+    wat: 4
+    lu: 4
   Orange bitters:
-    wat: 2
-    lu: 2
+    wat: 4
+    lu: 4
+  Midori:
+    wat: 3
+    lu: 3
+  Simple Syrup:
+    wat: 4
+    lu: 4
+  Grenadine:
+    wat: 4
+    lu: 4
+  Sour mix:
+    wat: 4
+    lu: 4

@@ -287,6 +287,16 @@ tr.row-zero td {
   line-height: 1.5;
 }
 
+.inventory-section-title {
+  margin: 1.25rem 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.inventory-panel .inventory-section-title:first-of-type {
+  margin-top: 0.5rem;
+}
+
 .usage-footer {
   color: var(--muted);
   font-size: 0.85rem;

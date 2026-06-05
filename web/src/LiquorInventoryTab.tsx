@@ -1,20 +1,33 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import BackupInventoryTable from "./BackupInventoryTable";
 import LocationInventoryTable from "./LocationInventoryTable";
 import {
+  parseSingleLocationRow,
   parseTwoLocationRow,
+  rowReadyForBackupOrder,
   rowReadyForOrder,
-  toOrderLine,
   type OnHandField,
   type TwoLocationCounts,
 } from "./inventory-locations";
 import LiquorOrderReviewPage from "./LiquorOrderReviewPage";
-import { type CatalogItem, type LiquorLineInput } from "./liquor-utils";
-import { useLiquorPar } from "./useLiquorPar";
+import {
+  liquorBackupParForItem,
+  liquorFrontParForItem,
+  type CatalogItem,
+  type LiquorLineInput,
+} from "./liquor-utils";
 
 type LiquorRow = {
   name: string;
   categoryName: string;
 } & TwoLocationCounts;
+
+type BackupRow = {
+  name: string;
+  categoryName: string;
+  onHand: string;
+  par: string;
+};
 
 type CatalogResponse = {
   ok: boolean;
@@ -25,9 +38,14 @@ type CatalogResponse = {
   detail?: string;
 };
 
-const STORAGE_KEY = "wat-clover-liquor-inventory-v4";
+const STORAGE_KEY = "wat-clover-liquor-inventory-v5";
 
-type SavedOnHand = { name: string; watOnHand?: string; luOnHand?: string };
+type SavedOnHand = {
+  name: string;
+  watOnHand?: string;
+  luOnHand?: string;
+  backupOnHand?: string;
+};
 
 function loadSavedOnHand(): Map<string, SavedOnHand> {
   try {
@@ -41,35 +59,53 @@ function loadSavedOnHand(): Map<string, SavedOnHand> {
   }
 }
 
+function frontParStrings(name: string): { watPar: string; luPar: string } {
+  const p = String(liquorFrontParForItem(name));
+  return { watPar: p, luPar: p };
+}
+
 export default function LiquorInventoryTab() {
   const [step, setStep] = useState<"entry" | "review">("entry");
   const [reviewLines, setReviewLines] = useState<LiquorLineInput[]>([]);
   const [rows, setRows] = useState<LiquorRow[]>([]);
+  const [backupRows, setBackupRows] = useState<BackupRow[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
-  const { byName: liquorPar, error: parError } = useLiquorPar(step === "entry");
 
   useEffect(() => {
     if (catalogItems.length === 0) return;
-    setRows((prev) => {
-      const saved = loadSavedOnHand();
-      return catalogItems.map((item) => {
+    const saved = loadSavedOnHand();
+    setRows((prev) =>
+      catalogItems.map((item) => {
         const key = item.name.toLowerCase();
-        const p = liquorPar.get(key);
         const existing = prev.find((r) => r.name.toLowerCase() === key);
         const fromSave = saved.get(key);
+        const { watPar, luPar } = frontParStrings(item.name);
         return {
           name: item.name,
           categoryName: item.category_name,
           watOnHand: existing?.watOnHand ?? fromSave?.watOnHand ?? "",
           luOnHand: existing?.luOnHand ?? fromSave?.luOnHand ?? "",
-          watPar: p ? String(p.wat_par) : "0",
-          luPar: p ? String(p.lu_par) : "0",
+          watPar,
+          luPar,
         };
-      });
-    });
-  }, [catalogItems, liquorPar]);
+      }),
+    );
+    setBackupRows((prev) =>
+      catalogItems.map((item) => {
+        const key = item.name.toLowerCase();
+        const existing = prev.find((r) => r.name.toLowerCase() === key);
+        const fromSave = saved.get(key);
+        return {
+          name: item.name,
+          categoryName: item.category_name,
+          onHand: existing?.onHand ?? fromSave?.backupOnHand ?? "",
+          par: String(liquorBackupParForItem(item.name)),
+        };
+      }),
+    );
+  }, [catalogItems]);
 
   const loadCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -99,15 +135,16 @@ export default function LiquorInventoryTab() {
   }, [loadCatalog]);
 
   useEffect(() => {
-    if (rows.length > 0) {
-      const payload = rows.map(({ name, watOnHand, luOnHand }) => ({
-        name,
-        watOnHand,
-        luOnHand,
-      }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    }
-  }, [rows]);
+    if (rows.length === 0) return;
+    const backupByName = new Map(backupRows.map((r) => [r.name.toLowerCase(), r]));
+    const payload = rows.map(({ name, watOnHand, luOnHand }) => ({
+      name,
+      watOnHand,
+      luOnHand,
+      backupOnHand: backupByName.get(name.toLowerCase())?.onHand ?? "",
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }, [rows, backupRows]);
 
   const updateRow = (name: string, field: OnHandField, value: string) => {
     setRows((prev) =>
@@ -115,7 +152,13 @@ export default function LiquorInventoryTab() {
     );
   };
 
-  const parsed = useMemo(
+  const updateBackupRow = (name: string, value: string) => {
+    setBackupRows((prev) =>
+      prev.map((r) => (r.name === name ? { ...r, onHand: value } : r)),
+    );
+  };
+
+  const parsedFront = useMemo(
     () =>
       rows.map((r) => ({
         ...parseTwoLocationRow(r),
@@ -125,28 +168,78 @@ export default function LiquorInventoryTab() {
     [rows],
   );
 
-  const unsetParCount = useMemo(
-    () => parsed.filter((r) => r.watParNum === 0 || r.luParNum === 0).length,
-    [parsed],
+  const parsedBackup = useMemo(
+    () =>
+      backupRows.map((r) => ({
+        ...parseSingleLocationRow(r),
+        name: r.name,
+        categoryLabel: r.categoryName,
+      })),
+    [backupRows],
   );
 
+  const combinedByName = useMemo(() => {
+    const backupMap = new Map(parsedBackup.map((r) => [r.name.toLowerCase(), r]));
+    return parsedFront.map((front) => {
+      const backup = backupMap.get(front.name.toLowerCase());
+      const frontNeed = front.orderQty ?? 0;
+      const backupNeed = backup?.orderQty ?? 0;
+      const backupPar = backup?.parNum ?? liquorBackupParForItem(front.name);
+      const backupOnHand = backup?.onHandNum ?? 0;
+      return {
+        name: front.name,
+        categoryLabel: front.categoryLabel,
+        front,
+        backup,
+        totalNeed: frontNeed + backupNeed,
+        line:
+          front.watOnHandNum != null &&
+          front.luOnHandNum != null &&
+          front.watParNum != null &&
+          front.luParNum != null &&
+          backup?.onHandNum != null &&
+          backup.parNum != null
+            ? {
+                name: front.name,
+                watOnHand: front.watOnHandNum,
+                luOnHand: front.luOnHandNum,
+                watPar: front.watParNum,
+                luPar: front.luParNum,
+                backupOnHand,
+                backupPar,
+                onHand: front.watOnHandNum + front.luOnHandNum + backupOnHand,
+                par: front.watParNum + front.luParNum + backupPar,
+                orderQty: frontNeed + backupNeed,
+              }
+            : null,
+      };
+    });
+  }, [parsedFront, parsedBackup]);
+
   const allFilled = useMemo(
-    () => parsed.length > 0 && parsed.every(rowReadyForOrder),
-    [parsed],
+    () =>
+      combinedByName.length > 0 &&
+      combinedByName.every(
+        (c) =>
+          rowReadyForOrder(c.front) &&
+          c.backup != null &&
+          rowReadyForBackupOrder(c.backup),
+      ),
+    [combinedByName],
   );
 
   const totalToOrder = useMemo(
-    () => parsed.reduce((s, r) => s + (r.orderQty ?? 0), 0),
-    [parsed],
+    () => combinedByName.reduce((s, c) => s + c.totalNeed, 0),
+    [combinedByName],
   );
 
   const sendReady = allFilled && totalToOrder > 0;
 
   const goToReview = () => {
     if (!sendReady) return;
-    const lines: LiquorLineInput[] = parsed
-      .filter((r) => (r.orderQty ?? 0) > 0)
-      .map((r) => toOrderLine(r.name, r));
+    const lines: LiquorLineInput[] = combinedByName
+      .filter((c) => c.totalNeed > 0 && c.line)
+      .map((c) => c.line!);
     setReviewLines(lines);
     setStep("review");
   };
@@ -167,20 +260,11 @@ export default function LiquorInventoryTab() {
   return (
     <section className="panel inventory-panel liquor-panel">
       <p className="inventory-intro">
-        <strong>Shots</strong> and <strong>pour bottles</strong>. Enter <strong>WAT</strong> and{" "}
-        <strong>LU</strong> on hand. <strong>Par</strong> is fixed (read-only from the database).
-        Orders go to <strong>Provi</strong> — spirits by product ID, mixers in rep notes at checkout.
+        <strong>Front coolers</strong> — enter <strong>WAT</strong> and <strong>LU</strong> counts
+        (par <strong>4</strong> each, <strong>Midori 3</strong>). <strong>Backup</strong> stock is
+        one count per item (par <strong>4</strong>). Order need combines both sections. Sends to{" "}
+        <strong>Provi</strong>.
       </p>
-
-      {parError && (
-        <div className="error">{parError}</div>
-      )}
-
-      {unsetParCount > 0 && !parError && (
-        <p className="inventory-hint">
-          {unsetParCount} item(s) have no par set yet (shown as —) and cannot be ordered.
-        </p>
-      )}
 
       {catalogError && <div className="error">{catalogError}</div>}
 
@@ -196,12 +280,23 @@ export default function LiquorInventoryTab() {
       )}
 
       {rows.length > 0 && (
-        <LocationInventoryTable
-          rows={parsed}
-          nameHeader="Item"
-          showCategory
-          onUpdate={updateRow}
-        />
+        <>
+          <h3 className="inventory-section-title">Front coolers (WAT / LU)</h3>
+          <LocationInventoryTable
+            rows={parsedFront}
+            nameHeader="Item"
+            showCategory
+            onUpdate={updateRow}
+          />
+
+          <h3 className="inventory-section-title">Backup stock</h3>
+          <BackupInventoryTable
+            rows={parsedBackup}
+            nameHeader="Item"
+            showCategory
+            onUpdate={updateBackupRow}
+          />
+        </>
       )}
 
       {allFilled && totalToOrder === 0 && rows.length > 0 && (
@@ -214,10 +309,12 @@ export default function LiquorInventoryTab() {
             <span className="muted">No items to show.</span>
           ) : allFilled ? (
             <span>
-              Total units below par (WAT + LU): <strong>{totalToOrder}</strong>
+              Total units below par (front + backup): <strong>{totalToOrder}</strong>
             </span>
           ) : (
-            <span className="muted">Fill every WAT and LU on-hand field to continue.</span>
+            <span className="muted">
+              Fill every WAT, LU, and backup on-hand field to continue.
+            </span>
           )}
         </div>
         <button

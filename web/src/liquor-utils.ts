@@ -13,6 +13,8 @@ export type LiquorLineInput = {
   luOnHand?: number;
   watPar?: number;
   luPar?: number;
+  backupOnHand?: number;
+  backupPar?: number;
 };
 
 export type LiquorCatalogLine = {
@@ -40,8 +42,20 @@ export type LiquorProviOrder = {
   rep_notes_text: string;
 };
 
-/** Default par for liquor SKUs pulled from Supabase (read-only in UI). */
-export const DEFAULT_LIQUOR_PAR = 4;
+/** Front cooler par (WAT + LU each). Backup par is always LIQUOR_BACKUP_PAR. */
+export const LIQUOR_FRONT_PAR_DEFAULT = 4;
+export const LIQUOR_BACKUP_PAR = 4;
+const LIQUOR_FRONT_PAR_OVERRIDES: Record<string, number> = {
+  midori: 3,
+};
+
+export function liquorFrontParForItem(name: string): number {
+  return LIQUOR_FRONT_PAR_OVERRIDES[name.trim().toLowerCase()] ?? LIQUOR_FRONT_PAR_DEFAULT;
+}
+
+export function liquorBackupParForItem(_name: string): number {
+  return LIQUOR_BACKUP_PAR;
+}
 
 export function formatRepNotes(lines: LiquorRepNotesLine[]): string {
   return lines.map((l) => `${l.name}: ${l.units_needed}`).join("; ");

@@ -35,7 +35,7 @@ export default function LocationInventoryTable({
               On hand
             </th>
             <th colSpan={2} className="loc-group">
-              Par (database)
+              Par
             </th>
             <th rowSpan={2} className="col-order">
               Need
